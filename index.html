@@ -1,0 +1,230 @@
+<!doctype html>
+<html lang="es">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <meta
+      name="description"
+      content="Panel interno para administrar alquileres, disponibilidad e inventario de equipos de construcción."
+    />
+    <meta name="theme-color" content="#f6f5f1" />
+    <meta name="apple-mobile-web-app-capable" content="yes" />
+    <meta name="apple-mobile-web-app-status-bar-style" content="default" />
+    <meta name="apple-mobile-web-app-title" content="Obra Clara" />
+    <title>Obra Clara | Panel de administración</title>
+    <link rel="manifest" href="manifest.webmanifest" />
+    <link rel="icon" href="icons/icon.svg" type="image/svg+xml" />
+    <link rel="apple-touch-icon" href="icons/icon-192.png" />
+    <link rel="stylesheet" href="styles.css" />
+    <script src="script.js" defer></script>
+  </head>
+  <body>
+    <a class="skip-link" href="#contenido">Saltar al contenido</a>
+
+    <header class="topbar">
+      <a class="brand" href="#inicio" aria-label="Obra Clara, ir al resumen">
+        <span class="brand-symbol" aria-hidden="true">OC</span>
+        <span class="brand-name">obra<span>clara</span></span>
+      </a>
+      <nav class="main-nav" aria-label="Navegación principal">
+        <a href="#inicio">Resumen</a>
+        <a href="#alquileres">Alquileres</a>
+        <a href="#inventario">Inventario</a>
+      </nav>
+      <div class="header-actions">
+        <button class="button button-secondary install-button" id="install-app" type="button">
+          <span aria-hidden="true">↓</span> Instalar app
+        </button>
+        <button class="button button-primary topbar-action" type="button" data-open-rental>
+          <span aria-hidden="true">＋</span> Registrar alquiler
+        </button>
+      </div>
+    </header>
+
+    <main id="contenido" class="dashboard section-shell">
+      <section class="dashboard-heading" id="inicio" aria-labelledby="page-title">
+        <div>
+          <p class="eyebrow"><span class="live-dot" aria-hidden="true"></span> Panel interno <span class="demo-label">Datos de muestra</span></p>
+          <h1 id="page-title">Resumen de operaciones</h1>
+          <p class="section-description">Consulta alquileres y disponibilidad del inventario.</p>
+        </div>
+        <p class="today-date" id="today-date"></p>
+      </section>
+
+      <section class="metrics" aria-label="Indicadores de operaciones">
+        <article class="metric-card">
+          <div class="metric-heading"><span>Alquileres en curso</span><span class="metric-icon icon-purple" aria-hidden="true">↗</span></div>
+          <p class="metric-value" id="metric-active">—</p>
+          <p class="metric-foot">Reservados y entregados</p>
+        </article>
+        <article class="metric-card">
+          <div class="metric-heading"><span>Atrasados</span><span class="metric-icon icon-orange" aria-hidden="true">!</span></div>
+          <p class="metric-value" id="metric-late">—</p>
+          <p class="metric-foot">Requieren seguimiento</p>
+        </article>
+        <article class="metric-card">
+          <div class="metric-heading"><span>Inventario comprometido</span><span class="metric-icon icon-green" aria-hidden="true">▥</span></div>
+          <p class="metric-value"><span id="metric-occupancy">—</span><small>%</small></p>
+          <p class="metric-foot">Unidades en operaciones activas</p>
+        </article>
+        <article class="metric-card">
+          <div class="metric-heading"><span>Saldo por cobrar</span><span class="metric-icon icon-blue" aria-hidden="true">$</span></div>
+          <p class="metric-value" id="metric-balance">—</p>
+          <p class="metric-foot">Sobre totales registrados</p>
+        </article>
+      </section>
+
+      <section class="panel-section" id="alquileres" aria-labelledby="rentals-title">
+        <div class="section-heading">
+          <div>
+            <p class="eyebrow">Registro y seguimiento</p>
+            <h2 id="rentals-title">Alquileres</h2>
+          </div>
+          <button class="button button-dark" type="button" data-open-rental>
+            <span aria-hidden="true">＋</span> Nuevo alquiler
+          </button>
+        </div>
+
+        <div class="table-tools">
+          <label class="search-field">
+            <span class="visually-hidden">Buscar alquiler</span>
+            <span aria-hidden="true">⌕</span>
+            <input id="rental-search" type="search" placeholder="Buscar cliente o código…" autocomplete="off" />
+          </label>
+          <label class="filter-field">
+            <span class="visually-hidden">Filtrar por estado</span>
+            <select id="status-filter">
+              <option value="all">Todos los estados</option>
+              <option value="reserved">Reservado</option>
+              <option value="active">Entregado</option>
+              <option value="late">Atrasado</option>
+              <option value="quote">Cotización</option>
+              <option value="returned">Devuelto</option>
+            </select>
+          </label>
+        </div>
+
+        <div class="table-wrap" tabindex="0" role="region" aria-label="Tabla desplazable de alquileres">
+          <table>
+            <thead>
+              <tr>
+                <th scope="col">Alquiler / cliente</th>
+                <th scope="col">Material y cantidad</th>
+                <th scope="col">Devolución</th>
+                <th scope="col">Estado</th>
+                <th scope="col">Saldo</th>
+              </tr>
+            </thead>
+            <tbody id="rental-rows"></tbody>
+          </table>
+          <p class="empty-state" id="empty-rentals" hidden>No hay alquileres que coincidan con la búsqueda.</p>
+        </div>
+        <p class="data-disclaimer" id="storage-notice" role="status">
+          Datos de muestra. Los registros nuevos se guardan únicamente en este navegador.
+        </p>
+      </section>
+
+      <section class="inventory-section" id="inventario" aria-labelledby="inventory-title">
+        <div class="section-heading">
+          <div>
+            <p class="eyebrow">Existencias por cantidades</p>
+            <h2 id="inventory-title">Inventario</h2>
+            <p class="section-description">Disponible = total − mantenimiento − comprometido en alquileres.</p>
+          </div>
+          <span class="inventory-key"><span class="key-dot"></span> Unidades disponibles</span>
+        </div>
+        <div class="inventory-grid" id="inventory-grid"></div>
+      </section>
+    </main>
+
+    <footer class="footer">
+      <a class="brand footer-brand" href="#inicio">
+        <span class="brand-symbol" aria-hidden="true">OC</span>
+        <span class="brand-name">obra<span>clara</span></span>
+      </a>
+      <p id="pwa-status" role="status" aria-live="polite">Preparando aplicación…</p>
+      <a href="#inicio">Ir al resumen ↑</a>
+    </footer>
+
+    <dialog class="rental-dialog" id="rental-dialog" aria-labelledby="dialog-title">
+      <form id="rental-form" novalidate>
+        <div class="dialog-heading">
+          <div><p class="eyebrow">Operación</p><h2 id="dialog-title">Registrar alquiler</h2></div>
+          <button class="icon-button" type="button" data-close-dialog aria-label="Cerrar formulario">×</button>
+        </div>
+        <p class="dialog-intro">Registra las cantidades, el precio negociado y los valores adicionales.</p>
+
+        <div class="form-grid">
+          <label class="form-field field-wide">Nombre del cliente
+            <input id="client-name" name="client" type="text" autocomplete="name" maxlength="80" required placeholder="Nombre del cliente" />
+          </label>
+          <label class="form-field field-wide">Modalidad
+            <select id="rental-type" name="type" required>
+              <option value="scaffold">Andamios — por pares y tiempo</option>
+              <option value="wall-metal">Encofrado metálico — por m²</option>
+              <option value="wall-wood">Encofrado de madera — por m²</option>
+              <option value="columns">Encofrado de columnas — por columna</option>
+            </select>
+          </label>
+          <label class="form-field" id="quantity-field"><span id="quantity-label">Cantidad de pares</span>
+            <input id="rental-quantity" name="quantity" type="number" min="1" step="1" value="1" required />
+          </label>
+          <label class="form-field" id="duration-field"><span id="duration-label">Tiempo acordado</span>
+            <span class="input-with-select">
+              <input id="duration-quantity" name="duration" type="number" min="1" step="1" value="7" />
+              <select id="duration-unit" name="durationUnit" aria-label="Unidad de tiempo">
+                <option value="day">días</option>
+                <option value="week">semanas</option>
+                <option value="month">meses</option>
+              </select>
+            </span>
+          </label>
+          <label class="form-field" id="price-field"><span id="price-label">Precio acordado por par / día</span>
+            <span class="input-with-prefix"><span aria-hidden="true">$</span><input id="agreed-price" name="price" type="number" min="0" step="0.01" value="1.25" required /></span>
+            <small id="reference-price">Valor de muestra editable: $1,25</small>
+          </label>
+          <label class="form-field" id="panels-field" hidden><span id="panels-label">Tableros a reservar</span>
+            <input id="panels-quantity" name="panels" type="number" min="0" step="1" value="0" />
+          </label>
+          <label class="form-field" id="joists-field" hidden>Viguetas a reservar
+            <input id="joists-quantity" name="joists" type="number" min="0" step="1" value="0" />
+          </label>
+          <label class="form-field" id="props-field" hidden>Puntales a reservar
+            <input id="props-quantity" name="props" type="number" min="0" step="1" value="0" />
+          </label>
+          <label class="form-field">Transporte acordado
+            <span class="input-with-prefix"><span aria-hidden="true">$</span><input id="transport-cost" name="transport" type="number" min="0" step="0.01" value="0" /></span>
+            <small>Ingresa 0 si está incluido o no aplica.</small>
+          </label>
+          <label class="form-field">Garantía recibida
+            <span class="input-with-prefix"><span aria-hidden="true">$</span><input id="deposit-amount" name="deposit" type="number" min="0" step="0.01" value="0" /></span>
+            <small>Se registra aparte del valor del alquiler.</small>
+          </label>
+          <label class="form-field">Abono inicial
+            <span class="input-with-prefix"><span aria-hidden="true">$</span><input id="initial-payment" name="payment" type="number" min="0" step="0.01" value="0" /></span>
+          </label>
+          <label class="form-field">Fecha estimada de devolución <span class="optional">(opcional)</span>
+            <input id="due-date" name="dueDate" type="date" />
+            <small>Déjala vacía si no hay fecha definida.</small>
+          </label>
+          <label class="form-field field-wide open-rental-toggle" id="open-rental-field">
+            <input id="open-rental" name="open" type="checkbox" />
+            <span>Alquiler abierto sin plazo de cobro definido</span>
+          </label>
+        </div>
+
+        <div class="estimate-box" aria-live="polite">
+          <span>Resumen del cálculo</span>
+          <strong id="calculation-total">—</strong>
+          <small id="calculation-detail">Se conservará el precio acordado en este registro.</small>
+        </div>
+        <p class="form-feedback" id="form-feedback" role="alert"></p>
+        <div class="dialog-actions">
+          <button class="button button-secondary" type="button" data-close-dialog>Cancelar</button>
+          <button class="button button-primary" type="submit">Guardar reserva</button>
+        </div>
+      </form>
+    </dialog>
+    <div class="toast" id="toast" role="status" aria-live="polite"></div>
+  </body>
+</html>
